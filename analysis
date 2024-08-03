@@ -1,0 +1,42 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the data
+url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
+data = pd.read_csv(url)
+
+# Data Cleaning
+# Reshape data to have 'Date' and 'Cases' columns
+data_long = data.melt(id_vars=['Province/State', 'Country/Region', 'Lat', 'Long'], 
+                      var_name='Date', value_name='Cases')
+
+# Convert 'Date' to datetime
+data_long['Date'] = pd.to_datetime(data_long['Date'])
+
+# Summarize cases by country
+cases_by_country = data_long.groupby(['Country/Region', 'Date'])['Cases'].sum().reset_index()
+
+# Pivot data for easier analysis
+cases_pivot = cases_by_country.pivot(index='Date', columns='Country/Region', values='Cases')
+
+# Visualization
+plt.figure(figsize=(14, 7))
+sns.lineplot(data=cases_pivot, palette='tab10')
+plt.title('COVID-19 Confirmed Cases Over Time')
+plt.xlabel('Date')
+plt.ylabel('Number of Cases')
+plt.legend(title='Country', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.grid(True)
+plt.show()
+
+# Insights
+total_cases = cases_by_country.groupby('Country/Region')['Cases'].max()
+top_countries = total_cases.sort_values(ascending=False).head(10)
+
+print("Top 10 countries with the most COVID-19 cases:")
+print(top_countries)
+
+# Additional Analysis: Daily New Cases
+cases_by_cou
